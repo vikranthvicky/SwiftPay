@@ -1,0 +1,27 @@
+# Maven
+/target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Kubernetes secrets
+k8s/secret.yaml
+
+# Generated performance output
+performance/results/*.json
+performance/results/*.csv
+performance/pcap/*.pcap
+!performance/pcap/swiftpay-payment-load.pcap

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swiftpay-app
+  namespace: swiftpay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swiftpay-app
+  template:
+    metadata:
+      labels:
+        app: swiftpay-app
+    spec:
+      containers:
+        - name: swiftpay-app
+          image: swiftpay:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: swiftpay-config
+            - secretRef:
+                name: swiftpay-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swiftpay-app
+  namespace: swiftpay
+spec:
+  selector:
+    app: swiftpay-app
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP
