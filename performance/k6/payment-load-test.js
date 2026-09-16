@@ -1,12 +1,12 @@
 import http from 'k6/http';
 import { check } from 'k6';
-import { randomUUID } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:8081';
+const BASE_URL = __ENV.BASE_URL || 'http://host.docker.internal:8081';
 const SENDER_ID = __ENV.SENDER_ID;
 const RECEIVER_ID = __ENV.RECEIVER_ID;
 const AMOUNT = __ENV.AMOUNT || '1.00';
-const DURATION = __ENV.DURATION || '60s';
+const DURATION = __ENV.DURATION || '10s';
 const RATE = Number(__ENV.RATE || '250');
 const TOKEN = __ENV.TOKEN;
 
@@ -25,19 +25,23 @@ export const options = {
 
 export default function () {
   const payload = JSON.stringify({
-    transaction_id: randomUUID(),
-    sender_id: SENDER_ID,
-    receiver_id: RECEIVER_ID,
+    transactionId: uuidv4(),
+    senderId: SENDER_ID,
+    receiverId: RECEIVER_ID,
     amount: AMOUNT,
     currency: 'INR',
   });
 
-  const response = http.post(`${BASE_URL}/v1/payments`, payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
-    },
-  });
+  const response = http.post(
+    `${BASE_URL}/v1/payments`,
+    payload,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    }
+  );
 
   check(response, {
     'payment request accepted': (r) => r.status === 201,
